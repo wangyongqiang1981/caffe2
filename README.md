@@ -1,30 +1,56 @@
-# Caffe2
+prepare on Ubuntu16.04 with K80x2
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-brightgreen.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Jenkins Build Status](https://ci.pytorch.org/jenkins/job/caffe2-master/lastCompletedBuild/badge/icon)](https://ci.pytorch.org/jenkins/job/caffe2-master)
-[![Appveyor Build Status](https://img.shields.io/appveyor/ci/Yangqing/caffe2.svg)](https://ci.appveyor.com/project/Yangqing/caffe2)
+    install NVIDIA_driver
+    install CUDA8.0
+    install cuDNN6.0
+    install Anaconda3
+        conda update -n base conda
+        add source.list (optional:China)
 
-Caffe2 is a lightweight, modular, and scalable deep learning framework. Building on the original [Caffe](http://caffe.berkeleyvision.org), Caffe2 is designed with expression, speed, and modularity in mind.
+setup 
+```
+sudo apt-get update
+sudo apt-get upgrade
 
-## Questions and Feedback
+conda create -n ai_caffe2 python=2.7
+conda activate  ai_caffe2
 
-Please use Github issues (https://github.com/caffe2/caffe2/issues) to ask questions, report bugs, and request new features.
+conda install cmake ipython opencv git future protobuf hypothesis pydot
+sudo apt-get install -y --no-install-recommends \
+      build-essential \
+      libgoogle-glog-dev \
+      libgtest-dev \
+      libiomp-dev \
+      libleveldb-dev \
+      liblmdb-dev \
+      libopencv-dev \
+      libopenmpi-dev \
+      libsnappy-dev \
+      libprotobuf-dev \
+      openmpi-bin \
+      openmpi-doc \
+      protobuf-compiler \
+      python-dev
 
-Please participate in our survey (https://www.surveymonkey.com/r/caffe2). We will send you information about new releases and special developer events/webinars.
+sudo apt-get remove libprotobuf-dev
+conda install protobuf
 
+git clone --recursive https://github.com/caffe2/caffe2.git && cd caffe2
+git submodule update --init
+mkdir build && cd build
 
-## License
+cmake -DCMAKE_INSTALL_PREFIX=/your-anaconda3-path/envs/ai_caffe2 -DUSE_NATIVE_ARCH=ON ..
+sudo make install -j8
 
-Caffe2 is released under the [Apache 2.0 license](https://github.com/caffe2/caffe2/blob/master/LICENSE). See the [NOTICE](https://github.com/caffe2/caffe2/blob/master/NOTICE) file for details.
+cd your-anaconda3-path
+sudo chown robot:robot -R * 
+#my user:group is robot
 
-### Further Resources on [Caffe2.ai](http://caffe2.ai)
+echo "export LD_LIBRARY_PATH="/home/robot/anaconda3/envs/ai_caffe2/:/home/robot/anaconda3/pkgs/cudatoolkit-8.0-3/lib" >> ~/.bashrc
+. ~/bashrc
+conda activate ai_caffe2
 
-* [Installation](http://caffe2.ai/docs/getting-started.html)
-* [Learn More](http://caffe2.ai/docs/learn-more.html)
-* [Upgrading to Caffe2](http://caffe2.ai/docs/caffe-migration.html)
-* [Datasets](http://caffe2.ai/docs/datasets.html)
-* [Model Zoo](http://caffe2.ai/docs/zoo.html)
-* [Tutorials](http://caffe2.ai/docs/tutorials.html)
-* [Operators Catalogue](http://caffe2.ai/docs/operators-catalogue.html)
-* [C++ API](http://caffe2.ai/doxygen-c/html/classes.html)
-* [Python API](http://caffe2.ai/doxygen-python/html/namespaces.html)
+watch -n 0.1 nvidia-smi 
+python -m caffe2.python.operator_test.relu_op_test
+# Ran 1 test in 2.846s
+```
